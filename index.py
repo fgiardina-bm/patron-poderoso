@@ -61,7 +61,7 @@ def verificar_patron_poderoso(symbol, timeframe):
 
     df_bb = get_bb_data(symbol, timeframe)
 
-    upper_bb, lower_bb = bollinger_bands(df_bb, 20, 2)
+    upper_bb, lower_bb = bollinger_bands(df_bb, 14, 2)
     upper_band = upper_bb.iloc[-1]
     lower_band = lower_bb.iloc[-1]
     rsi = calcular_rsi(closes)
