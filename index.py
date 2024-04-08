@@ -6,6 +6,8 @@ import pandas as pd
 from binance.client import Client
 import time
 import sys
+import argparse
+
 
 exchange = ccxt.binance()
 client = Client("", "", tld="com")
@@ -61,7 +63,7 @@ def verificar_patron_poderoso(symbol, timeframe):
 
     df_bb = get_bb_data(symbol, timeframe)
 
-    upper_bb, lower_bb = bollinger_bands(df_bb, 14, 2)
+    upper_bb, lower_bb = bollinger_bands(df_bb, boll_len, boll_mult)
     upper_band = upper_bb.iloc[-1]
     lower_band = lower_bb.iloc[-1]
     rsi = calcular_rsi(closes)
@@ -74,7 +76,7 @@ def verificar_patron_poderoso(symbol, timeframe):
         )
         print(f"Bollinger Upper Band: {upper_band}")
         print(f"Bollinger Lower Band: {lower_band}")
-        print(f"Close: {closes[-1]}")
+        print(f"Price: {closes[-1]}")
         print(f"RSI: {rsi[-1]}")
         print()
     elif closes[-1] < lower_band and rsi[-1] < rsi_down:
@@ -85,7 +87,7 @@ def verificar_patron_poderoso(symbol, timeframe):
         )
         print(f"Bollinger Upper Band: {upper_band}")
         print(f"Bollinger Lower Band: {lower_band}")
-        print(f"Close: {closes[-1]}")
+        print(f"Price: {closes[-1]}")
         print(f"RSI: {rsi[-1]}")
         print()
 
@@ -112,9 +114,11 @@ def bollinger_bands(data, n_loockback, n_std=2):
     return upper, lower
 
 
-timeframe = sys.argv[1]
+timeframe = "5m"
 rsi_up = 80
 rsi_down = 20
+boll_len = 14
+boll_mult = 2
 
 
 def buscar_pares():
@@ -123,10 +127,28 @@ def buscar_pares():
         verificar_patron_poderoso(symbol, timeframe)
 
 
-while True:
-    print()
-    print("Buscando patrones poderosos...")
-    print(f"{timeframe} {datetime.now().strftime('%H:%M')}")
-    buscar_pares()
-    print("Esperando 60 segundos...")
-    time.sleep(60)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("interval", help="Intervalo a utilizar", default="5m")
+    parser.add_argument("--boll_len", help="Bollinger length", default=14)
+    parser.add_argument("--boll_mult", help="Bollinger mult", default=2)
+    parser.add_argument("--rsi_upper", help="RSI upper line", default=80)
+    parser.add_argument("--rsi_lower", help="RSI lower lihe", default=20)
+    args = parser.parse_args()
+
+    timeframe = args.interval
+    rsi_up = int(args.rsi_upper)
+    rsi_down = int(args.rsi_lower)
+    boll_len = int(args.boll_len)
+    boll_mult = int(args.boll_mult)
+
+    while True:
+
+        print()
+        print("Buscando patrones poderosos...")
+        print(
+            f"{timeframe} {datetime.now().strftime('%H:%M')} [{boll_len} {boll_mult} - {rsi_up} {rsi_down}]"
+        )
+        buscar_pares()
+        print("Esperando 60 segundos...")
+        time.sleep(60)
